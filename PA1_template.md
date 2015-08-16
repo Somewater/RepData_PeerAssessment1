@@ -43,26 +43,35 @@ qplot(x = interval, y = steps, data = activity.per_interval, geom = ("line")) +
 
 ![](PA1_template_files/figure-html/per_interval-1.png) 
 
-Most active interval is interval #835.
+Most active interval is interval #835, it includes 206 steps average.
 
 
 
 ## Imputing missing values
 
+Fill missing values using mean values of appropriate interval:
+
+
 ```r
 number_of_NA = sum(is.na(activity$steps))
-# fill missing values with mean values of that interval
-rows_with_NA = activity[is.na(activity$steps),]
 
+# function returns mean steps value on specified interval
 interval_to_mean_steps <- function(interval) {
   idx <- which(activity.per_interval[,'interval'] == interval)
   activity.per_interval[idx,]$steps
 }
 
+# rows of original data with undefined steps values
+rows_with_NA = activity[is.na(activity$steps),]
+
+# create copy of original data frame
 activity.imputing_steps = activity
+
+# fill missing steps values using mean values of appropriate interval:
 activity.imputing_steps[is.na(activity.imputing_steps$steps),]$steps = 
   sapply(rows_with_NA$interval, interval_to_mean_steps)
 
+# recalculate basic parameters for new dataset
 activity.imputing_steps.per_day = aggregate(steps ~ date, activity.imputing_steps, FUN = sum)
 activity.imputing_steps.per_day.mean = mean(activity.imputing_steps.per_day$steps)
 activity.imputing_steps.per_day.median = median(activity.imputing_steps.per_day$steps)
@@ -80,7 +89,6 @@ Total number of missing values is 2304.
 **Total number of steps taken per day (with NA filling)**  
 Mean: 10766.19  
 Median: 10766.19
-
 
 ## Are there differences in activity patterns between weekdays and weekends?
 

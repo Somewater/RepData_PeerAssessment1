@@ -37,25 +37,34 @@ qplot(x = interval, y = steps, data = activity.per_interval, geom = ("line")) +
   geom_vline(xintercept = most_active_interval, col = "red", linetype = "longdash")
 ```
 
-Most active interval is interval #`r most_active_interval`.
+Most active interval is interval #`r most_active_interval`, it includes `r prettyNum(most_active_row$steps, digits=0)` steps average.
 
 
 
 ## Imputing missing values
+
+Fill missing values using mean values of appropriate interval:
+
 ```{r fill_missing_vals}
 number_of_NA = sum(is.na(activity$steps))
-# fill missing values with mean values of that interval
-rows_with_NA = activity[is.na(activity$steps),]
 
+# function returns mean steps value on specified interval
 interval_to_mean_steps <- function(interval) {
   idx <- which(activity.per_interval[,'interval'] == interval)
   activity.per_interval[idx,]$steps
 }
 
+# rows of original data with undefined steps values
+rows_with_NA = activity[is.na(activity$steps),]
+
+# create copy of original data frame
 activity.imputing_steps = activity
+
+# fill missing steps values using mean values of appropriate interval:
 activity.imputing_steps[is.na(activity.imputing_steps$steps),]$steps = 
   sapply(rows_with_NA$interval, interval_to_mean_steps)
 
+# recalculate basic parameters for new dataset
 activity.imputing_steps.per_day = aggregate(steps ~ date, activity.imputing_steps, FUN = sum)
 activity.imputing_steps.per_day.mean = mean(activity.imputing_steps.per_day$steps)
 activity.imputing_steps.per_day.median = median(activity.imputing_steps.per_day$steps)
@@ -67,7 +76,6 @@ Total number of missing values is `r number_of_NA`.
 **Total number of steps taken per day (with NA filling)**  
 Mean: `r prettyNum(activity.imputing_steps.per_day.mean)`  
 Median: `r prettyNum(activity.imputing_steps.per_day.median)`
-
 
 ## Are there differences in activity patterns between weekdays and weekends?
 ```{r weekend_pattern}
