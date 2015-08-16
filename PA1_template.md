@@ -55,7 +55,8 @@ Fill missing values using mean values of appropriate interval:
 ```r
 number_of_NA = sum(is.na(activity$steps))
 
-# function returns mean steps value on specified interval
+# function returns mean steps value on specified interval using
+# previously calculated table activity.per_interval
 interval_to_mean_steps <- function(interval) {
   idx <- which(activity.per_interval[,'interval'] == interval)
   activity.per_interval[idx,]$steps
