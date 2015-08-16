@@ -51,9 +51,51 @@ Most active interval is interval #835.
 
 ```r
 number_of_NA = sum(is.na(activity$steps))
-# fill missing values with mean values of that interval 
+# fill missing values with mean values of that interval
+rows_with_NA = activity[is.na(activity$steps),]
+
+interval_to_mean_steps <- function(interval) {
+  idx <- which(activity.per_interval[,'interval'] == interval)
+  activity.per_interval[idx,]$steps
+}
+
+activity.imputing_steps = activity
+activity.imputing_steps[is.na(activity.imputing_steps$steps),]$steps = 
+  sapply(rows_with_NA$interval, interval_to_mean_steps)
+
+activity.imputing_steps.per_day = aggregate(steps ~ date, activity.imputing_steps, FUN = sum)
+activity.imputing_steps.per_day.mean = mean(activity.imputing_steps.per_day$steps)
+activity.imputing_steps.per_day.median = median(activity.imputing_steps.per_day$steps)
+qplot(activity.imputing_steps.per_day$steps, xlab = "Steps per day (with NA filling)")
 ```
+
+```
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+```
+
+![](PA1_template_files/figure-html/fill_missing_vals-1.png) 
+
 Total number of missing values is 2304.
+
+**Total number of steps taken per day (with NA filling)**  
+Mean: 10766.19  
+Median: 10766.19
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```r
+is.weekend <- function(day_name) {
+  if (day_name == "Saturday" || day_name == "Sunday")
+    "weekend"
+  else    
+    "weekday"
+}
+activity.imputing_steps$weekday <- factor(sapply(weekdays(activity.imputing_steps$date), is.weekend))
+activity.imputing_steps.per_interval = aggregate(steps ~ interval + weekday, activity.imputing_steps, FUN = mean)
+
+qplot(x = interval, y = steps, data = activity.imputing_steps.per_interval, geom = ("line")) + 
+  facet_grid(weekday ~ .)
+```
+
+![](PA1_template_files/figure-html/weekend_pattern-1.png) 

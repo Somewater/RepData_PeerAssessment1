@@ -16,4 +16,27 @@ qplot(x = interval, y = steps, data = activity.per_interval, geom = ("line")) +
   geom_vline(xintercept = most_active_interval, col = "red", linetype = "longdash")
 
 number_of_NA = sum(is.na(activity$steps))
-activity[is.na(activity$steps),]
+rows_with_NA = activity[is.na(activity$steps),]
+
+interval_to_mean_steps <- function(interval) {
+  idx <- which(activity.per_interval[,'interval'] == interval)
+  activity.per_interval[idx,]$steps
+}
+
+activity.imputing_steps = activity
+activity.imputing_steps[is.na(activity.imputing_steps$steps),]$steps = 
+  sapply(rows_with_NA$interval, interval_to_mean_steps)
+
+activity.imputing_steps.per_day = aggregate(steps ~ date, activity.imputing_steps, FUN = sum)
+activity.imputing_steps.per_day.mean = mean(activity.imputing_steps.per_day$steps)
+activity.imputing_steps.per_day.median = median(activity.imputing_steps.per_day$steps)
+
+is.weekend <- function(day_name) {
+  if (day_name == "Saturday" || day_name == "Sunday")
+    "weekend"
+  else    
+    "weekday"
+}
+activity.imputing_steps$weekday <- factor(sapply(weekdays(activity.imputing_steps$date), is.weekend))
+activity.imputing_steps.per_interval = aggregate(steps ~ interval + weekday, activity.imputing_steps, FUN = mean)
+
